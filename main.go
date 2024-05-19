@@ -19,12 +19,32 @@ const (
 
 
 
-func setIPv6DNSServers(interfaceName string, dnsServers string) error {
+func setIPv6DNSServers(interfaceName string, dnsServers []string) error {
 
-    cmdArgs := []string{"/SetDNS6", dnsServers, interfaceName}
+    // cmdArgs := []string{"/SetDNS6", "\""+dnsServers+"\"", "\""+interfaceName+"\""}
 
-    cmd := exec.Command("QuickSetDNS.exe", cmdArgs...)
+    // fmt.Println("QuickSetDNS.exe", strings.Join(cmdArgs, " "))
+    // cmd := exec.Command("QuickSetDNS.exe", cmdArgs...)
+    // output, err := cmd.CombinedOutput()
+    // if err != nil {
+    //     return fmt.Errorf("failed to set IPv6 DNS server %s: %v, output: %s", dnsServers, err, string(output))
+    // }
+
+	// return nil
+    cmdArgs := []string{"interface", "ipv6", "set", "dns", "name="+interfaceName, "source=static", "address="+dnsServers[0]}
+
+    fmt.Println("netsh", strings.Join(cmdArgs, " "))
+    cmd := exec.Command("netsh", cmdArgs...)
     output, err := cmd.CombinedOutput()
+    if err != nil {
+        return fmt.Errorf("failed to set IPv6 DNS server %s: %v, output: %s", dnsServers, err, string(output))
+    }
+
+    cmdArgs = []string{"interface", "ipv6", "add", "dns", "name="+interfaceName, "addr="+dnsServers[1], "index=2"}
+
+    fmt.Println("netsh", strings.Join(cmdArgs, " "))
+    cmd = exec.Command("netsh", cmdArgs...)
+    output, err = cmd.CombinedOutput()
     if err != nil {
         return fmt.Errorf("failed to set IPv6 DNS server %s: %v, output: %s", dnsServers, err, string(output))
     }
@@ -44,7 +64,6 @@ func main() {
         "#@ipv6_prefix@#::@250:56ff:fe3c:e6c4",
     }
 
-    dnsServers_join := strings.Join(dnsServers, ",")
 
     // Start an infinite loop
     for {
@@ -58,16 +77,19 @@ func main() {
 
         // If the current prefix is different from the last one, update the zone files and reload services
         if currentIPv6Prefix != lastIPv6Prefix {
-			fmt.Printf("prefix: %v\n", currentIPv6Prefix)
 
-
-            dnsServers_expanded := strings.ReplaceAll(string(dnsServers_join), "#@ipv6_prefix@#::@", currentIPv6Prefix)
+            var dnsServers_expanded []string
+            for _, srv := range dnsServers {
+                replacedContent := strings.ReplaceAll(srv, "#@ipv6_prefix@#::@", currentIPv6Prefix)
+                dnsServers_expanded = append(dnsServers_expanded, replacedContent)
+            }
+			fmt.Printf("prefix: %v\ndns servers: %v\n", currentIPv6Prefix, dnsServers_expanded)
         
             err = setIPv6DNSServers(interfaceName, dnsServers_expanded)
             if err != nil {
                 fmt.Printf("Error: %v\n", err)
             } else {
-                fmt.Println("IPv6 DNS servers set successfully for interface:", interfaceName)
+                // fmt.Println("IPv6 DNS servers set successfully for interface:", interfaceName)
             }
 
             lastIPv6Prefix = currentIPv6Prefix
