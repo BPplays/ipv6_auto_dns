@@ -170,6 +170,7 @@ func main() {
 			}
 			if runtime.GOOS == "linux" {
 				linux_write_prefix(currentIPv6Prefix)
+				reload_dns_linux()
 			}
 
 			lastIPv6Prefix = currentIPv6Prefix
@@ -250,4 +251,12 @@ func getIPv6Prefix(ipnet *net.IPNet) string {
 	return ipv6Prefix
 }
 
+
+func reload_dns_linux() error {
+    err := exec.Command("systemctl", "reload", "NetworkManager.service").Run()
+    if err != nil {
+        return err
+    }
+    return nil
+}
 
