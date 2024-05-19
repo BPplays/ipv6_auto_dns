@@ -27,10 +27,12 @@ func linux_setIPv6DNSServers(dnsServers []string) error {
 	}
 
 	var out strings.Builder
-	for _, srv := range dnsServers {
+	for i, srv := range dnsServers {
 		out.WriteString("nameserver ")
 		out.WriteString(srv)
-		out.WriteString("\n")
+		if i < len(dnsServers)-1 {
+			out.WriteString("\n")
+		}
 	}
 
 	replacedContent := strings.ReplaceAll(string(content), "#@ipv6_dns_servers@#", out.String())
