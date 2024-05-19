@@ -11,7 +11,7 @@ import (
 const (
     configFile     = "/etc/bind/.ipv6_prefix"
 	prefix_len = 64
-	interfaceName = "ens33"
+	interfaceName = "Ethernet"
     checkInterval  = 50 * time.Second
 )
 
