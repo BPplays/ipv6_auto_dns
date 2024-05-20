@@ -186,7 +186,35 @@ func main() {
 
 
 
+// isValidIPAddress checks if an IP address is not link-local, not ULA, and not loopback.
+func isValidIPAddress(ip net.IP) bool {
+	if ip == nil {
+		return false // Invalid IP address
+	}
 
+	if ip.IsLoopback() || ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() || ip.IsLinkLocalUnicast() || !ip.IsGlobalUnicast() {
+		return false
+	}
+
+	return true
+}
+
+
+// addrToIP converts a net.Addr to a net.IP if possible.
+func addrToIP(addr net.Addr) (net.IP, error) {
+	switch v := addr.(type) {
+	case *net.IPAddr:
+		return v.IP, nil
+	case *net.IPNet:
+		return v.IP, nil
+	case *net.TCPAddr:
+		return v.IP, nil
+	case *net.UDPAddr:
+		return v.IP, nil
+	default:
+		return nil, fmt.Errorf("unsupported address type: %T", addr)
+	}
+}
 
 // Function to get the current IPv6 prefix
 func getCurrentIPv6Prefix(interfaceName string) (string, error) {
@@ -209,13 +237,20 @@ func getCurrentIPv6Prefix(interfaceName string) (string, error) {
 	var ipv6Prefix string
 
 	// Iterate over addresses to find the IPv6 prefix
+	var ip net.IP
 	for _, addr := range addrs {
 		// Check if it's an IPv6 address and not temporary
-		if ipnet, ok := addr.(*net.IPNet); ok && ipnet.IP.To4() == nil && !ipnet.IP.IsLinkLocalUnicast() && !ipnet.IP.IsInterfaceLocalMulticast() && !ipnet.IP.IsLinkLocalUnicast() && ipnet.IP.IsGlobalUnicast() && ipnet.IP.To16() != nil {
-			if ipnet.IP.IsGlobalUnicast() {
-				ipv6Prefix = getIPv6Prefix(ipnet)
-				break
+		ip, err = addrToIP(addr)
+		if err != nil {
+			continue
+		}
+		if isValidIPAddress(ip) {
+			ipnet, ok := addr.(*net.IPNet)
+			if !ok {
+				continue
 			}
+			ipv6Prefix = getIPv6Prefix(ipnet)
+			break
 		}
 	}
 
