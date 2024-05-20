@@ -211,7 +211,7 @@ func getCurrentIPv6Prefix(interfaceName string) (string, error) {
 	// Iterate over addresses to find the IPv6 prefix
 	for _, addr := range addrs {
 		// Check if it's an IPv6 address and not temporary
-		if ipnet, ok := addr.(*net.IPNet); ok && ipnet.IP.To4() == nil && !ipnet.IP.IsLinkLocalUnicast() && ipnet.IP.IsGlobalUnicast() && ipnet.IP.To16() != nil {
+		if ipnet, ok := addr.(*net.IPNet); ok && ipnet.IP.To4() == nil && !ipnet.IP.IsLinkLocalUnicast() && !ipnet.IP.IsInterfaceLocalMulticast() && !ipnet.IP.IsLinkLocalUnicast() && ipnet.IP.IsGlobalUnicast() && ipnet.IP.To16() != nil {
 			ipv6Prefix = getIPv6Prefix(ipnet)
 			break
 		}
