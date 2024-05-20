@@ -184,7 +184,25 @@ func main() {
 }
 
 
+// isULA checks if the given IP address is a Unique Local Address (ULA).
+func isULA(ip net.IP) bool {
+	// ULA range is fc00::/7
+	ula := &net.IPNet{
+		IP:   net.ParseIP("fc00::"),
+		Mask: net.CIDRMask(7, 128),
+	}
+	return ula.Contains(ip)
+}
 
+// isLinkLocal checks if the given IP address is a link-local address.
+func isLinkLocal(ip net.IP) bool {
+	// Link-local range is fe80::/10
+	linkLocal := &net.IPNet{
+		IP:   net.ParseIP("fe80::"),
+		Mask: net.CIDRMask(10, 128),
+	}
+	return linkLocal.Contains(ip)
+}
 
 // isValidIPAddress checks if an IP address is not link-local, not ULA, and not loopback.
 func isValidIPAddress(ip net.IP) bool {
@@ -192,7 +210,7 @@ func isValidIPAddress(ip net.IP) bool {
 		return false // Invalid IP address
 	}
 
-	if ip.IsLoopback() || ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() || ip.IsLinkLocalUnicast() || !ip.IsGlobalUnicast() || ip.To4() != nil {
+	if ip.IsLoopback() || ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() || ip.IsLinkLocalUnicast() || !ip.IsGlobalUnicast() || ip.To4() != nil || isLinkLocal(ip) || isULA(ip) {
 		return false
 	}
 
