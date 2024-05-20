@@ -192,7 +192,7 @@ func isValidIPAddress(ip net.IP) bool {
 		return false // Invalid IP address
 	}
 
-	if ip.IsLoopback() || ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() || ip.IsLinkLocalUnicast() || !ip.IsGlobalUnicast() {
+	if ip.IsLoopback() || ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() || ip.IsLinkLocalUnicast() || !ip.IsGlobalUnicast() || ip.To4() != nil {
 		return false
 	}
 
