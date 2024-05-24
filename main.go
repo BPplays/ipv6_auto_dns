@@ -130,11 +130,11 @@ func main() {
 	}
 
 	interfaceName := ""
-	config_dir := ""
+	// config_dir := ""
 
 	if runtime.GOOS == "linux" {
-		config_dir = config_dir_linux
-		content, err := os.ReadFile(filepath.Join(config_dir, "interface"))
+		// config_dir = config_dir_linux
+		content, err := os.ReadFile("/etc/main_interface")
 		if err != nil {
 			interfaceName = interfaceName_def_linux
 		} else {
@@ -182,6 +182,33 @@ func main() {
 		time.Sleep(checkInterval)
 	}
 }
+
+
+
+
+func reload_dns_linux() error {
+    err := exec.Command("systemctl", "reload", "NetworkManager.service").Run()
+    if err != nil {
+        return err
+    }
+    return nil
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+//! ====== ip part starts
+
+
 
 
 // isULA checks if the given IP address is a Unique Local Address (ULA).
@@ -309,11 +336,9 @@ func getIPv6Prefix(ipnet *net.IPNet) string {
 }
 
 
-func reload_dns_linux() error {
-    err := exec.Command("systemctl", "reload", "NetworkManager.service").Run()
-    if err != nil {
-        return err
-    }
-    return nil
-}
+
+
+
+
+
 
