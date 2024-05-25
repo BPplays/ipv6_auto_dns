@@ -139,6 +139,7 @@ func main() {
 			interfaceName = interfaceName_def_linux
 		} else {
 			interfaceName = string(content)
+			fmt.Printf("interface set to: %v\n", interfaceName)
 		}
 	} else if runtime.GOOS == "windows" {
 		interfaceName = interfaceName_win
